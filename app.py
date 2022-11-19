@@ -27,7 +27,7 @@ def index():
 	return render_template("index.html")
 
 # Tourist attractions search with GET method (page,keyword)
-@app.route("/attractions", methods=["GET"])
+@app.route("/api/attractions", methods=["GET"])
 def attractions():
 	
 	# Set the formula with page numbers (input) and ids (outputs)
@@ -166,7 +166,7 @@ def attractions():
 	return jsonify(response)
 
 
-@app.route("/attraction/<attraction_id>")
+@app.route("/api/attraction/<attraction_id>")
 def attraction(attraction_id):
 
 	# Set the data structure of the response
@@ -249,7 +249,7 @@ def attraction(attraction_id):
 	#return render_template("attraction.html")
 
 # Return all the attraction categories 
-@app.route("/categories")
+@app.route("/api/categories")
 def categories():
 
 	# Set the data structure of the response
