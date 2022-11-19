@@ -20,12 +20,6 @@ class Database:
 
 mydb = Database('root','811223','taipei_tour')
 
-
-# Pages
-@app.route("/")
-def index():
-	return render_template("index.html")
-
 # Tourist attractions search with GET method (page,keyword)
 @app.route("/api/attractions", methods=["GET"])
 def attractions():
@@ -246,7 +240,7 @@ def attraction(attraction_id):
 
 
 	return jsonify(response)
-	#return render_template("attraction.html")
+	
 
 # Return all the attraction categories 
 @app.route("/api/categories")
@@ -292,6 +286,16 @@ def categories():
 
 	return jsonify(response)
 
+
+
+
+# Pages
+@app.route("/")
+def index():
+	return render_template("index.html")
+@app.route("/attraction/<id>")
+def attraction(id):
+	return render_template("attraction.html")
 @app.route("/booking")
 def booking():
 	return render_template("booking.html")
