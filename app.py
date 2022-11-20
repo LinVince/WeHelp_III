@@ -68,7 +68,11 @@ def attractions():
 
 	# Get information from the database (with or without keyword)
     # Data structure => tuple list [(id, name.....), (id, name.....), ...]
+    # See the number of pages and if there is a next page
 	keyword = request.args.get('keyword')
+	page = request.args.get('page')
+	page = int(page)
+	row_num = int()
 	if  keyword != None:
 		keyword_name = '%' + request.args.get('keyword') + '%'
 		keyword_cat = request.args.get('keyword')
@@ -78,21 +82,41 @@ def attractions():
 					FROM spot
 					WHERE name LIKE %s 
 						OR category = %s
+					LIMIT %s, %s
+						"""
+		cursor.execute(query, (keyword_name, keyword_cat, page * 12, 12))
+		entry = cursor.fetchall()
+		
+		# Get the value (row_num)
+		query = """SELECT COUNT(*)
+					FROM spot
+					WHERE name LIKE %s 
+						OR category = %s
+					
 						"""
 		cursor.execute(query, (keyword_name, keyword_cat))
-		entry = cursor.fetchall()
+		row_num = cursor.fetchone()[0]
+		
+		
 	
 	else:
 		query = """SELECT id, name, category, description, address,
 						  direction, mrt, longitude, latitude, images
-				   FROM spot"""
-		cursor.execute(query)
+				   FROM spot
+				   LIMIT %s, %s"""
+		cursor.execute(query, (page *12, 12))
 		entry = cursor.fetchall()
 
+		# Get the value (row_num)
+		query = """SELECT COUNT(*)
+					FROM spot					
+						"""
+		cursor.execute(query)
+		row_num = cursor.fetchone()[0]
 
 
 	# Calculate the number of rows 
-	row_num = len(entry)
+	"""row_num = len(entry)
 	print ("How many rows in the keyword search? ", len(entry))
 
 	# Calculate the number of pages
@@ -126,10 +150,23 @@ def attractions():
 
 	except:
 		error['message'] = '無法取得任何資料'
+		return (error)"""
+
+	# Check if there is any information
+	if len(entry) == 0:
+		error['message'] = '無法取得任何資料'
 		return (error)
 
+	# Assign the value (next_page)
+	page_num = row_num // 12 + 1
+
+	if page + 1 < page_num:
+		response['next_page'] = page + 1
+	elif page + 1 == page_num:
+		response['next_page'] = None
+
 	# Combine the information from the database with the response
-	for i in pg_entry:
+	for i in entry:
 		attraction = {'id':int(),
 				'name':str(),
 				'category':str(),
@@ -161,7 +198,7 @@ def attractions():
 
 
 @app.route("/api/attraction/<attraction_id>")
-def attraction(attraction_id):
+def attraction_api(attraction_id):
 
 	# Set the data structure of the response
 	response = {"data": dict()}
