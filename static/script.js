@@ -3,12 +3,13 @@ async function getApiData(page_num, keyword){
 	var requestURL = "/api/attractions?page=" + page_num + "&keyword=" + keyword;
 	isLoading = true;
 	const getData = await fetch(requestURL).then(function(response){
-		isLoading = false;
+		
 		return response.json();
 	}).then(function(data){
 		console.log(data);
+		isLoading = false;
 		return data;
-	})
+	})	
 		return getData;
 };
 
