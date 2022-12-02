@@ -31,9 +31,14 @@ function render(){
 	grid_item.setAttribute('class','gallery__img');
 	container.appendChild(grid_item);
 
+	let a = document.createElement('a');
+	let id = data_array[i].id;
+	a.setAttribute('href','/attraction/' + String(id));
+
 	let img = document.createElement('img');
 	img.setAttribute('src',data_array[i].images[0]);
-	grid_item.appendChild(img);
+	a.appendChild(img);
+	grid_item.appendChild(a);
 
 	let desc_bar = document.createElement('div');
 	desc_bar.classList.add("desc_bar");

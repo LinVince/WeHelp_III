@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>Taipei Tour</title>
+    <link rel="stylesheet" type="text/css" href="/static/attraction.css">    
+  </head> 
+  <body>  
+   <div class="top">
+    <div class="frame">
+      <div class="heading" style="font-size:26px; font-weight:bolder; color:#2B99BB ;">台北一日遊</div>
+      <div class="desktop-menu">
+        <div class="item">預定行程</div>
+        <div class="item">登入/註冊</div>
+      </div>
+    </div>
+     </div>
+  <div class="container">
+    <div class="gallery_slideshow">
+    <div class="prev"><img src="/static/images/prev_btn.png"></div>
+    <div class="next"><img src="/static/images/next_btn.png"></div>
+    <div class="thumbnail_frame">
+   </div>
+  </div>
+  <div class="info_box">
+    <div id="attraction_name"></div>
+    <div id="cat_and_mrt"></div>
+    <div class="booking_box">
+      <div class="booking_text_box">訂購導覽行程</div>   
+      <div class="booking_line_box">以此景點為中心的一日行程，帶您探索城市角落故事</div>
+      <div class="text_box">選擇日期：<input type="date" id="tour_date" name="tour_date" checked></div><div class="text_box">選擇時間： <input type="radio" id="day_tour" name="tour_time" value="day" checked><label for="tour_time">上半天</label><input type="radio" id="evening_tour" name="tour_time" value="evening"><label for="tour_time">下半天</label></div>
+      <div class="text_box">導覽費用：<span id="fee" style="font-weight:500;">新台幣 2000 元</span></div> 
+      <button type="button" id="book_btn">開始預約行程</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="container_col">
+  <div id="description"></div>
+  <div class="heading_2">景點地址：</div>
+  <div id="address"></div>
+  <div class="heading_2">交通方式：</div>
+  <div id="transportation"></div>
+</div>
+</div>
+
+   
+<div class="footer">COPYRIGHT © 2021 台北一日遊</div>  
+  <script src="/static/attraction.js"></script>
+  </body>
+  </html>
