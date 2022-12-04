@@ -107,7 +107,6 @@ body{
 
 
 
-
 .booking_box{
   width:600px;
   height:302px;
@@ -172,6 +171,15 @@ label{
   line-height: 13px;
   color: #666666;
 }
+
+input[type="radio"]{
+  width: 22px;
+  height: 22px;
+  accent-color: #448899;
+  border-style:none;
+  outline-color: transparent;
+}
+
 
 #book_btn{
 padding: 10px 20px;
@@ -360,6 +368,21 @@ margin-left:20px;
   color: #666666;
 }
 
+.divider_frame{
+  display: flex;
+  justify-content: center;
+}
+
+.divider{
+  width: 1200px;
+  height: 0px;
+  border:1px solid #E8E8E8;
+  margin-top: 50px;
+  margin-bottom: 50px;
+
+}
+
+
 @media(min-width:600px) and (max-width:1199px){
 
 
@@ -398,6 +421,10 @@ margin-left:20px;
   width: 500px;
 }
 
+.divider{
+  width: 540px;
+
+}
 
 }
 
@@ -457,6 +484,11 @@ margin-left:20px;
 
 #description, .heading_2, #address, #transportation{
   padding-left: 5%;
+}
+
+.divider{
+  width: 90%;
+
 }
 
 }
