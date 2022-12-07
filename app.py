@@ -1,6 +1,7 @@
 from flask import *
 import mysql.connector
-
+import bcrypt
+import jwt
 
 app=Flask(__name__)
 app.config["JSON_AS_ASCII"]=False
@@ -20,16 +21,13 @@ class Database:
 
 mydb = Database('root','811223','taipei_tour')
 
+"""
+Database member data structure (id, name, email, hased_password, salt)
+"""
+
 # Tourist attractions search with GET method (page,keyword)
 @app.route("/api/attractions", methods=["GET"])
 def attractions():
-	
-	# Set the formula with page numbers (input) and ids (outputs)
-	"""page = request.args.get('page')
-	page = int(page)
-	attraction_ids = []
-	for i in range(12):
-		attraction_ids.append(page*12 + i)"""
 
 	# Set the data structure of the response
 	response = {"next_page":int(), "data":[]}
@@ -114,43 +112,6 @@ def attractions():
 		cursor.execute(query)
 		row_num = cursor.fetchone()[0]
 
-
-	# Calculate the number of rows 
-	"""row_num = len(entry)
-	print ("How many rows in the keyword search? ", len(entry))
-
-	# Calculate the number of pages
-	page_num = row_num // 12 + 1
-
-	# Calculate the sequence numbers of each attraction in the page 
-	# Assign each row to each page and define next_page value
-	pg_entry = []
-	attraction_row_num = []
-	page = request.args.get('page')
-	page = int(page)	
-
-	if page < page_num - 1:
-		for i in range(12):
-			attraction_row_num.append(page*12 + i)
-		response['next_page'] = page + 1
-	elif page == page_num - 1:
-		for i in range(page*12, row_num):
-			attraction_row_num.append(i)
-		response['next_page'] = None
-	else:
-		error['message'] = '頁數輸入超出範圍'
-		return (error)
-
-	# What if there isn't any information to display
-	try:
-		for i in entry[attraction_row_num[0]:attraction_row_num[-1] + 1]:
-			pg_entry.append(i)
-    
-		print ("How many rows in the page? ", len(pg_entry))
-
-	except:
-		error['message'] = '無法取得任何資料'
-		return (error)"""
 
 	# Check if there is any information
 	if len(entry) == 0:
@@ -251,18 +212,6 @@ def attraction_api(attraction_id):
 		error['message'] = '景點編號不正確'
 		return (error)
 
-	# Combine the information with the response format
-	"""attraction = {'id':int(),
-				'name':str(),
-				'category':str(),
-				'description':str(),
-				'address':str(),
-				'transport':str(),
-				'mrt':str(),
-				'lat':float(),
-				'lng':float(),
-				'images':[]
-				}"""
 	count = 0	
 	for i in attraction.keys():
 		if i == 'images':
@@ -324,6 +273,151 @@ def categories():
 	return jsonify(response)
 
 
+#Registration of an account
+@app.route("/api/user", methods = ["POST"])
+def registration():
+
+	# Set the data structure of the request and response
+	response = {"ok": True}
+	error = {"error":True, "message":""}
+
+	# Connect to the database 
+	connection = mysql.connector.connect(user=mydb.user, 
+                                        password=mydb.password,
+                                        host='127.0.0.1',
+                                        database=mydb.database
+                                        )
+	try:    
+	    print (connection.is_connected())
+	    db_Info = connection.get_server_info()
+	    print("Connected to MySQL Server version ", db_Info)
+	    cursor = connection.cursor(buffered=True)
+	    cursor.execute("select database();")
+	    record = cursor.fetchone()
+	    print("You're connected to database: ", record)
+
+	except:
+		error['message'] = '資料庫無法連線'
+		return error
+
+
+	#Define and get the form request (nm/ac/pw)
+	name = request.get_json()['name']
+	email = request.get_json()['email']
+	password = request.get_json()['password']
+
+	#Give error message if left blank
+	if name == '' or email == '' or password == '':
+		error['message'] = '請勿留空白'
+		return error
+
+	password = password.encode('utf-8')
+	salt = bcrypt.gensalt()
+	password = bcrypt.hashpw(password,salt)
+	salt = salt.decode('utf-8')
+	password = password.decode('utf-8')
+
+    #Check if the email has been registered
+	mycursor = connection.cursor(buffered=True)
+	query = """Select email FROM member WHERE email = %s"""
+	mycursor.execute(query, (email,))
+	result = mycursor.fetchall()
+
+	if len(result) != 0:
+		error['message'] = "帳號已經存在"
+		return error
+
+	else:
+		query = """INSERT INTO member (name, email, password, salt) VALUES (%s, %s, %s, %s)"""
+		mycursor.execute(query, (name, email, password, salt))
+		connection.commit()
+		return response
+
+
+
+
+@app.route("/api/user/auth", methods = ["GET", "PUT", "DELETE"])
+def user_info():
+	# Connect to the database 
+	connection = mysql.connector.connect(user=mydb.user, 
+                                        password=mydb.password,
+                                        host='127.0.0.1',
+                                        database=mydb.database
+                                        )
+	try:    
+	    print (connection.is_connected())
+	    db_Info = connection.get_server_info()
+	    print("Connected to MySQL Server version ", db_Info)
+	    cursor = connection.cursor(buffered=True)
+	    cursor.execute("select database();")
+	    record = cursor.fetchone()
+	    print("You're connected to database: ", record)
+
+	except:
+		error['message'] = '資料庫連接錯誤'
+		return (error)
+
+	#Get the information of the user who has been logged into
+	if request.method == "GET":
+		response = {"data":{"id":None, "name":None, "email":None}}
+		if session['user_login'] == True:
+			response['data']['id'] = session['user_id']
+			response['data']['name'] = session['user_name']
+			response['data']['email'] = session['email'] 
+			return response
+		else:
+			return response
+
+	#User login
+	elif request.method == "PUT":
+		error = {"error":True, "message":""}
+		response = {"ok":True}
+		email = request.get_json()['email']
+		password = request.get_json()['password']
+		if email == '' or password == '':
+			error['message'] = "請勿留空白"
+			return error
+		
+		password = password.encode('utf-8')
+
+		query = "SELECT * FROM member WHERE email =  %s"
+		#Avoid "unread result error"
+		mycursor = connection.cursor(buffered=True)
+
+		#Process the password and the salt
+		mycursor.execute(query, (email,))
+		connection.commit()
+		myresult = mycursor.fetchall()
+
+		if len(myresult) == 1:
+			salt = myresult[0][5]
+			salt = salt.encode('utf-8')
+			hashed_pw = bcrypt.hashpw(password,salt)
+			hashed_pw = hashed_pw.decode('utf-8')
+
+			if hashed_pw == myresult[0][4]: 
+				#let the server get the cookie so that the login status can remain
+				session['user_login'] = True
+				session['user_id'] = myresult[0][1]
+				session['user_name'] = myresult[0][2]
+				session['user_email'] = myresult[0][3]
+				token = jwt.encode({"email":email}, "secret", algorithm="HS256")
+
+				return token, response
+               
+			else:
+				error['message'] = "帳號密碼錯誤"
+				return error
+
+		else:
+			error['message'] = "帳號密碼錯誤"
+			return error
+
+
+	#User logout
+	elif request.method == "DELETE":		
+		response = {"ok":True}
+ 
 
 
 # Pages

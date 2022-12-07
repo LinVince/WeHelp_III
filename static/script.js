@@ -94,10 +94,6 @@ getApiCat().then((data) => {
 });
 
 
-
-
-
-
 window.addEventListener('scroll', throttle(callback, 0));
 
 function throttle(fn, wait) {
@@ -169,6 +165,83 @@ window.addEventListener('click', function(e){
 	}
 
 });
+
+const login_signup_link = document.getElementById("login_signup_link")
+const popup_window_login = document.getElementById("popup_window_login")
+const popup_window_signup = document.getElementById("popup_window_signup")
+const popup_layout = document.querySelector("#popup_layout")
+login_signup_link.addEventListener('click',function(){
+	popup_window_login.style.display = 'flex'
+	popup_layout.style.display = 'block'
+	const signup_link = document.getElementById("signup_link")
+	signup_link.addEventListener('click', function(){
+		popup_window_login.style.display = 'none'
+		popup_window_signup.style.display = 'flex'
+	});
+	const login_link = document.getElementById("login_link")
+	login_link.addEventListener('click', function(){
+		popup_window_signup.style.display = 'none'
+		popup_window_login.style.display = 'flex'
+	});
+});
+
+async function login(){	
+	let requestURL = "/api/user/auth";
+	let email = document.getElementById('login_email').value
+	let password = document.getElementById('login_password').value
+	let obj = {"email": email, "password": password};
+	console.log(obj)
+	//Please write the following line to set your jsondata..otherwise....
+  json_data = JSON.stringify(obj);
+	const get_response = await fetch(requestURL,{
+		method:'PUT',
+		headers:{'Content-type':'application/json'},
+		body:json_data,
+	});
+	return get_response.json();
+};
+
+async function signup(){	
+	let requestURL = "/api/user";
+	let name = document.getElementById('signup_name').value
+	let email = document.getElementById('signup_email').value
+	let password = document.getElementById('signup_password').value
+	let obj = {"name": name, "email": email, "password": password};
+	console.log(obj)
+	//Please write the following line to set your jsondata..otherwise....
+  json_data = JSON.stringify(obj);
+	const get_response = await fetch(requestURL,{
+		method:'POST',
+		headers:{'Content-type':'application/json'},
+		body:json_data,
+	});
+	return get_response.json();
+};
+
+const login_button = document.getElementById('login_button')
+const login_message = document.getElementById('login_message')
+login_button.addEventListener('click',function(){
+	login().then((data => {
+		if (data.error === true){
+			login_message.innerText = data.message;
+		}else{
+			console.log('Good')
+		}
+	}));
+})
+
+
+const signup_button = document.getElementById('signup_button')
+const signup_message = document.getElementById('signup_message')
+signup_button.addEventListener('click',function(){
+	signup().then((data => {
+		if (data.error === true){
+			signup_message.innerText = data.message;
+		}else{
+			console.log('Good')
+		}
+	}));
+})
 
 
 

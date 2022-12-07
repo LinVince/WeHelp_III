@@ -7,11 +7,13 @@
   z-index:10;
   background-color:#FFF;
 }
+
 .frame{
   display:flex;
   font-size:16px;
   width:1200px; 
 }
+
 .heading{
   background-color:#FFFFFF;
   flex:auto;
@@ -27,6 +29,13 @@
   width:40%;
   margin:8px;
 }
+
+#login_signup_link,
+#login_link,
+#signup_link{
+  cursor: pointer;
+}
+
 .mobile-menu{
   margin:8px;
 
@@ -153,6 +162,116 @@
   font-size:40px;
   fone-weight:bold;
   text-align:center;
+}
+
+#popup_layout{
+  width: 1920px;
+  height: 1374px;
+  background-color:#000000;
+  opacity:0.25;
+  display:none;
+  position:fixed;
+  z-index:20;
+}
+
+#popup_window_login,
+#popup_window_signup{
+  width:340px;
+  height:275px;
+  position: fixed;
+  border-radius:6px;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 60px #AAAAAA;
+  top:80px;
+  left:35%;
+  display:none;
+  justify-content:center;
+  align-items:flex-start;
+  z-index:21; 
+}
+
+#popup_window_signup{
+  height: 332px;
+}
+
+.popup_decorator_bar{
+  position: absolute;
+  width: 340px;
+  height: 10px;
+  border-top-left-radius:6px;
+  border-top-right-radius:6px;
+  top:-5px;
+  background: linear-gradient(270deg, #337788 0%, #66AABB 100%);
+  z-index:22;
+}
+
+.popup_frame{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.popup_heading{
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 700;
+font-size: 24px;
+line-height: 24px;
+margin-top:20px;
+text-align: center;
+color: #666666;
+}
+
+.login_input, 
+.signup_input{
+margin-top:15px;
+box-sizing: border-box;
+width: 310px;
+height: 47px;
+background: #FFFFFF;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+padding-left:15px;
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 13px;
+display: flex;
+align-items: center;
+color: #757575;
+}
+
+#login_button,
+#signup_button{
+width: 310px;
+height: 47px;
+background: #448899;
+border-radius: 5px;
+margin-top:15px;
+border:none;
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 400;
+font-size: 19px;
+line-height: 16px;
+color: #FFFFFF;
+}
+
+#login_message,
+#signup_message{
+width: 310px;
+height: 22px;
+margin-top:12px;
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 13px;
+color: #666666;
+display: flex;
+text-align: center;
+justify-content:center;
 }
 
 
