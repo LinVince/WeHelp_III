@@ -30,6 +30,11 @@
   margin:8px;
 }
 
+.flex_center{
+  display: flex;
+  justify-content: center;
+}
+
 #login_signup_link,
 #logout_link,
 #login_link,
@@ -190,7 +195,6 @@
   background: #FFFFFF;
   box-shadow: 0px 4px 60px #AAAAAA;
   top:80px;
-  left:35%;
   display:none;
   justify-content:center;
   align-items:flex-start;
