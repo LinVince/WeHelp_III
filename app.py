@@ -2,11 +2,12 @@ from flask import *
 import mysql.connector
 import bcrypt
 import jwt
+import datetime
 
 app=Flask(__name__)
 app.config["JSON_AS_ASCII"]=False
 app.config["TEMPLATES_AUTO_RELOAD"]=True
-
+app.secret_key = "Thisismysecretkey000000111111"
 
 # Create the database object
 class Database:
@@ -20,6 +21,37 @@ class Database:
         return f'<Database: {self.database}>'
 
 mydb = Database('root','811223','taipei_tour')
+
+def getUserdbInfo(email):
+	# Connect to the database 
+	connection = mysql.connector.connect(user=mydb.user, 
+                                        password=mydb.password,
+                                        host='127.0.0.1',
+                                        database=mydb.database
+                                        )
+	try:    
+	    print (connection.is_connected())
+	    db_Info = connection.get_server_info()
+	    print("Connected to MySQL Server version ", db_Info)
+	    cursor = connection.cursor(buffered=True)
+	    cursor.execute("select database();")
+	    record = cursor.fetchone()
+	    print("You're connected to database: ", record)
+
+	except:
+		error['message'] = '資料庫連接錯誤'
+		return (error)
+
+	#Get information from db given email
+	email = email
+	query = """SELECT id, name, email
+					FROM member
+					WHERE email = %s """
+	cursor.execute(query, (email,))
+	entry = cursor.fetchone()
+	response = {"id":entry[0],"name":entry[1],"email":entry[2]}
+	return response
+
 
 """
 Database member data structure (id, name, email, hased_password, salt)
@@ -360,18 +392,20 @@ def user_info():
 	#Get the information of the user who has been logged into
 	if request.method == "GET":
 		response = {"data":{"id":None, "name":None, "email":None}}
-		if session['user_login'] == True:
-			response['data']['id'] = session['user_id']
-			response['data']['name'] = session['user_name']
-			response['data']['email'] = session['email'] 
-			return response
+		cookie = request.cookies.get('access_token')
+		if jwt.decode(cookie,'secret',algorithms="HS256"):
+			email = jwt.decode(cookie,'secret',algorithms="HS256")['email']
+			print ("this is the decoded", email)
+			response['data']['id'] = getUserdbInfo(email)['id']
+			response['data']['name'] = getUserdbInfo(email)['name']
+			response['data']['email'] = getUserdbInfo(email)['email']
+			return jsonify (response)
 		else:
-			return response
+			return jsonify (response)
 
 	#User login
 	elif request.method == "PUT":
 		error = {"error":True, "message":""}
-		response = {"ok":True}
 		email = request.get_json()['email']
 		password = request.get_json()['password']
 		if email == '' or password == '':
@@ -390,20 +424,20 @@ def user_info():
 		myresult = mycursor.fetchall()
 
 		if len(myresult) == 1:
-			salt = myresult[0][5]
+			salt = myresult[0][4]
 			salt = salt.encode('utf-8')
 			hashed_pw = bcrypt.hashpw(password,salt)
 			hashed_pw = hashed_pw.decode('utf-8')
 
-			if hashed_pw == myresult[0][4]: 
-				#let the server get the cookie so that the login status can remain
-				session['user_login'] = True
-				session['user_id'] = myresult[0][1]
-				session['user_name'] = myresult[0][2]
-				session['user_email'] = myresult[0][3]
-				token = jwt.encode({"email":email}, "secret", algorithm="HS256")
-
-				return token, response
+			if hashed_pw == myresult[0][3]: 
+				#second let's do something with the cookie
+				response = make_response({'msg': 'successfully logged in!'})
+				access_token = jwt.encode({"email":email}, "secret", algorithm="HS256")
+				response.headers['Access-Control-Allow-Credentials'] = True
+				expire = datetime.datetime.now() + datetime.timedelta(days=7)
+				response.set_cookie('access_token', value=access_token, expires = expire)
+				print ('Great')
+				return response
                
 			else:
 				error['message'] = "帳號密碼錯誤"
@@ -415,8 +449,10 @@ def user_info():
 
 
 	#User logout
-	elif request.method == "DELETE":		
-		response = {"ok":True}
+	elif request.method == "DELETE":	
+		response = make_response({'msg': 'Logging you out!'})
+		response.set_cookie('access_token', value='')
+		return response
  
 
 

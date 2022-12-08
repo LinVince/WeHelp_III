@@ -166,6 +166,7 @@ window.addEventListener('click', function(e){
 
 });
 
+//Click link to get Login or Signup Popup window
 const login_signup_link = document.getElementById("login_signup_link")
 const popup_window_login = document.getElementById("popup_window_login")
 const popup_window_signup = document.getElementById("popup_window_signup")
@@ -185,6 +186,20 @@ login_signup_link.addEventListener('click',function(){
 	});
 });
 
+
+//Go back to the front page without any popup window
+function goToFront(){
+	popup_window_login.style.display = 'none'
+	popup_window_signup.style.display = 'none' 
+	popup_layout.style.display = 'none'
+}
+
+function reload(){
+	location.reload();
+}
+
+
+//Define the login function
 async function login(){	
 	let requestURL = "/api/user/auth";
 	let email = document.getElementById('login_email').value
@@ -201,6 +216,7 @@ async function login(){
 	return get_response.json();
 };
 
+//Define the logout function
 async function signup(){	
 	let requestURL = "/api/user";
 	let name = document.getElementById('signup_name').value
@@ -218,6 +234,7 @@ async function signup(){
 	return get_response.json();
 };
 
+//Login process
 const login_button = document.getElementById('login_button')
 const login_message = document.getElementById('login_message')
 login_button.addEventListener('click',function(){
@@ -225,12 +242,14 @@ login_button.addEventListener('click',function(){
 		if (data.error === true){
 			login_message.innerText = data.message;
 		}else{
-			console.log('Good')
+			login_message.innerText = "成功登入"
+			setTimeout(goToFront, 2000);
+			setTimeout(reload, 3000);
 		}
 	}));
 })
 
-
+//Logout process
 const signup_button = document.getElementById('signup_button')
 const signup_message = document.getElementById('signup_message')
 signup_button.addEventListener('click',function(){
@@ -238,9 +257,71 @@ signup_button.addEventListener('click',function(){
 		if (data.error === true){
 			signup_message.innerText = data.message;
 		}else{
-			console.log('Good')
+			signup_message.innerText = "註冊成功";
+			setTimeout(goToFront, 2000);
+			setTimeout(reload, 3000);
 		}
 	}));
+})
+
+//Check if the user has logged into the system
+async function checkUserLogin(){
+	let requestURL = "/api/user/auth";
+	const getData = await fetch(requestURL,
+	{	method:'GET',
+		headers:{'Content-type':'application/json'}
+	}).then(function(response){
+		return response.json();
+	}).then(function(data){
+		console.log(data);
+		return data;
+	})	
+		return getData;
+};
+
+
+function afterLogout(){
+	login_signup_link.style.display = 'block'
+	logout_link.style.display = 'none'
+}
+
+function afterLogin(){
+	login_signup_link.style.display = 'none'
+	logout_link.style.display = 'block'
+}
+
+window.addEventListener("load", function(){
+	checkUserLogin().then((data) => {
+		if(data.data.id != null){
+			afterLogin();
+			}else{afterLogout()
+			} 
+	})
+  console.log("page is fully loaded");
+});
+
+
+//Logout the user
+
+async function userLogout(){
+	let requestURL = "/api/user/auth";
+	const getData = await fetch(requestURL,
+	{	method:'DELETE',
+		headers:{'Content-type':'application/json'}
+	}).then(function(response){
+		return response.json();
+	}).then(function(data){
+		console.log(data);
+		return data;
+	})	
+		return getData;
+};
+
+const logout_link = document.getElementById('logout_link')
+logout_link.addEventListener('click',function(){
+	userLogout().then((data) => {
+		location.reload();
+	})
 })
 
 

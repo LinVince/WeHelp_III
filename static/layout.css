@@ -31,9 +31,16 @@
 }
 
 #login_signup_link,
+#logout_link,
 #login_link,
-#signup_link{
+#signup_link,
+#login_button,
+#signup_button{
   cursor: pointer;
+}
+
+#logout_link{
+  display: none;
 }
 
 .mobile-menu{
