@@ -1,3 +1,7 @@
+body{
+  margin: 0px;
+}
+
 .top{
   display:flex;
   justify-content:center;
@@ -23,11 +27,9 @@
   color:#2B99BB ;
 }
 
-a, a:link, a:visited, a:hover, a:active{
-  text-decoration: None;
-  color:#2B99BB; 
+#title{
+  cursor: pointer;
 }
-
 
 .desktop-menu{
   display:flex;
@@ -134,6 +136,17 @@ a, a:link, a:visited, a:hover, a:active{
   flex-direction:column;
   justify-content:center;
 }
+
+#icon_close{
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  right: 7px;
+  top: 10px;
+  cursor: pointer;
+
+}
+
 
 .popup_heading{
 font-family: 'Noto Sans TC';

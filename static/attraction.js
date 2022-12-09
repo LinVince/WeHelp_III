@@ -287,3 +287,20 @@ logout_link.addEventListener('click',function(){
 		location.reload();
 	})
 })
+
+
+
+//Close icon close the popup window
+const icon_closes = document.querySelectorAll('#icon_close')
+icon_closes.forEach(function(btn){
+	btn.addEventListener('click',function(){
+	goToFront();
+	})
+})
+
+
+//Go to the front page (clicking title)
+const title = document.getElementById('title')
+title.addEventListener('click',function(){
+	window.location.href = '/';
+});
