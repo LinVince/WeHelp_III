@@ -159,7 +159,16 @@ justify-content:center;
   flex:auto;
   width:400px;
   margin:8px;
+  font-size:26px; 
+  font-weight:bolder; 
+  color:#2B99BB
 }
+
+a, a:link, a:visited, a:hover, a:active{
+  text-decoration: None;
+  color:#2B99BB; 
+}
+
 .desktop-menu{
   display:flex;
   justify-content:flex-end;

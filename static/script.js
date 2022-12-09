@@ -243,8 +243,7 @@ login_button.addEventListener('click',function(){
 			login_message.innerText = data.message;
 		}else{
 			login_message.innerText = "成功登入"
-			setTimeout(goToFront, 2000);
-			setTimeout(reload, 3000);
+			reload();
 		}
 	}));
 })
@@ -258,8 +257,7 @@ signup_button.addEventListener('click',function(){
 			signup_message.innerText = data.message;
 		}else{
 			signup_message.innerText = "註冊成功";
-			setTimeout(goToFront, 2000);
-			setTimeout(reload, 3000);
+			reload();
 		}
 	}));
 })
