@@ -53,6 +53,73 @@ def getUserdbInfo(email):
 	return response
 
 
+def getBookingInfo(email):
+	# Connect to the database 
+	connection = mysql.connector.connect(user=mydb.user, 
+                                        password=mydb.password,
+                                        host='127.0.0.1',
+                                        database=mydb.database
+                                        )
+	try:    
+	    print (connection.is_connected())
+	    db_Info = connection.get_server_info()
+	    print("Connected to MySQL Server version ", db_Info)
+	    cursor = connection.cursor(buffered=True)
+	    cursor.execute("select database();")
+	    record = cursor.fetchone()
+	    print("You're connected to database: ", record)
+
+	except:
+		error['message'] = '資料庫連接錯誤'
+		return (error)
+
+	#Get information from db given email
+	email = email
+	response = {"attraction_id":None,"date":None,"time":None, "price":None}
+	try:
+		query = """SELECT attraction_id, date_ , time_, price
+						FROM booking
+						WHERE email = %s """
+		cursor.execute(query, (email,))
+		entry = cursor.fetchall()[0]
+		response = {"attraction_id":entry[0],"date":entry[1],"time":entry[2], "price":entry[3]}
+		return response
+
+	except:
+		return response
+
+def getAttractionInfo(attraction_id):
+	# Connect to the database 
+	connection = mysql.connector.connect(user=mydb.user, 
+                                        password=mydb.password,
+                                        host='127.0.0.1',
+                                        database=mydb.database
+                                        )
+	try:    
+	    print (connection.is_connected())
+	    db_Info = connection.get_server_info()
+	    print("Connected to MySQL Server version ", db_Info)
+	    cursor = connection.cursor(buffered=True)
+	    cursor.execute("select database();")
+	    record = cursor.fetchone()
+	    print("You're connected to database: ", record)
+
+	except:
+		error['message'] = '資料庫連接錯誤'
+		return (error)
+
+	#Get information from db given attraction_id 
+	attraction_id = attraction_id
+	query = """SELECT id, name , address, picture
+					FROM spot
+					WHERE id = %s """
+	cursor.execute(query, (attraction_id,))
+	entry = cursor.fetchone()
+	response = {"attraction_id":entry[0],"name":entry[1],"address":entry[2], "picture":entry[3][0]}
+	return response
+
+
+
 """
 Database member data structure (id, name, email, hased_password, salt)
 """
@@ -392,8 +459,15 @@ def user_info():
 	#Get the information of the user who has been logged into
 	if request.method == "GET":
 		response = {"data":{"id":None, "name":None, "email":None}}
-		cookie = request.cookies.get('access_token')
-		if jwt.decode(cookie,'secret',algorithms="HS256"):
+		
+		# Check login status
+		try:	
+			cookie = request.cookies.get('access_token')
+			cookie_decoded = jwt.decode(cookie,'secret',algorithms="HS256")
+		except:
+			return response
+
+		if cookie_decoded:
 			email = jwt.decode(cookie,'secret',algorithms="HS256")['email']
 			print ("this is the decoded", email)
 			response['data']['id'] = getUserdbInfo(email)['id']
@@ -454,6 +528,127 @@ def user_info():
 		response.set_cookie('access_token', value='')
 		return response
  
+
+@app.route("/api/booking", methods = ["GET", "POST", "DELETE"])
+def booking_api():
+	# Connect to the database  
+	connection = mysql.connector.connect(user=mydb.user, 
+                                        password=mydb.password,
+                                        host='127.0.0.1',
+                                        database=mydb.database
+                                        )
+	try:    
+	    print (connection.is_connected())
+	    db_Info = connection.get_server_info()
+	    print("Connected to MySQL Server version ", db_Info)
+	    cursor = connection.cursor(buffered=True)
+	    cursor.execute("select database();")
+	    record = cursor.fetchone()
+	    print("You're connected to database: ", record)
+
+	except:
+		error['message'] = '資料庫連接錯誤'
+		return (error)
+
+	#Get the information of booking not yet billed
+	if request.method == "GET":
+		response = {"data":{"attraction":{"id":None, "name":None, "address":None, "image":None}, 
+							"date":None, "time":None, "price":None}}
+		error = {"error":True, "message":""}
+
+		# Check login status
+		try:	
+			cookie = request.cookies.get('access_token')
+			cookie_decoded = jwt.decode(cookie,'secret',algorithms="HS256")
+		except:
+			error['message'] = '尚未登入'
+			return jsonify (error)
+		# Check login validity
+		if cookie_decoded:
+			email = cookie_decoded['email']
+			response['data']['date'] = getBookingInfo('email')['date']
+			response['data']['time'] = getBookingInfo('email')['time']
+			response['data']['price'] = getBookingInfo('email')['price']
+			response['data']['attraction']['id'] = getBookingInfo(email)['attraction_id']
+			response['data']['attraction']['name'] = getAttractionInfo(response['data']['attraction']['id'])['name']
+			response['data']['attraction']['address'] = getAttractionInfo()['address']
+			response['data']['attraction']['image'] = getAttractionInfo()['image']
+			return jsonify(response)
+
+		else:
+			error['message'] = '尚未登入'
+			return jsonify (error)
+
+	# Post a booking order to db
+	elif request.method == "POST":
+		response = {"ok": True}
+		error = {"error": True, "message": ""}
+		print ("Get the post message", request)
+		# Check the login status
+		try:	
+			cookie = request.cookies.get('access_token')
+			cookie_decoded = jwt.decode(cookie,'secret',algorithms="HS256")
+		except:
+			error['message'] = '尚未登入'
+			return jsonify (error)
+		# Check login validity
+		if cookie_decoded:
+			# Track the user by email
+			print ("Authenticated successfully")
+			email = cookie_decoded['email']
+			attraction_id = request.get_json()['attractionId']
+			date = request.get_json()['date']
+			time = request.get_json()['time']
+			price = request.get_json()['price']
+			# Check if the email(user) has already booked
+			try:
+				if getBookingInfo(email)['attraction_id'] != None:
+					print ("Ready to post information")
+					query = """SET SQL_SAFE_UPDATES = 0"""
+					cursor.execute(query)
+					print ("Step one done")
+					query = """UPDATE booking  
+								SET attraction_id = %s, date_ = %s, time_ = %s, price = %s
+							    WHERE email = %s;"""
+					cursor.execute(query, (attraction_id, date, time, price, email))
+					print ("Step two done")
+					query = """SET SQL_SAFE_UPDATES = 1"""
+					cursor.execute(query)
+					connection.commit()
+					print ("successfully posted")
+					return jsonify(response)
+
+				else:
+					query = """INSERT INTO booking (attraction_id, date_, time_, price, email)
+								VALUES (%s, %s, %s, %s, %s)
+								"""
+					cursor.execute(query, (attraction_id, date, time, price, email))
+					connection.commit()
+					print ("successfully posted")
+					return jsonify(response)
+		
+
+			except:
+				error['message'] = '建立失敗'
+				return jsonify (error)
+
+		else:
+			error['message'] = '尚未登入'
+			return jsonify (error)
+
+	# Delete a booking in db
+	elif request.method == "DELETE":
+		response = {"ok": True}
+		error = {"error": True, "message": ""}
+		try:
+			query = """DELETE FROM booking WHERE attraction_id = %s"""
+			cursor.execute(query, (attraction_id,))
+			connection.commit()
+			return jsonify(response)
+
+		except:
+			error['message'] = "刪除失敗"
+			return jsonify(error)
 
 
 # Pages

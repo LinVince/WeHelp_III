@@ -350,6 +350,7 @@ input[type="radio"]{
 
 
 #book_btn{
+cursor: pointer;
 padding: 10px 20px;
 width: 160px;
 height: 36px;

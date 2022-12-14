@@ -2,6 +2,14 @@ function getCurrentURL () {
   return window.location.href
 }
 
+function getCurrentAttractionId (fn){
+	let url = fn()
+	let url_array = url.split('/');
+	let url_array_length = url_array.length;
+	let attraction_id = url_array[url_array_length - 1];
+	return attraction_id
+}
+
 async function getApiData(){
 	const url = getCurrentURL()
 	console.log(url)
@@ -123,7 +131,7 @@ next_btn.addEventListener('click', function(){
 let tour_times = document.querySelectorAll('input[name="tour_time"]');
 tour_times.forEach((ele) => {
 	ele.addEventListener('change', function(e){
-		if(e.target.value === 'day'){
+		if(e.target.value === 'morning'){
 			document.getElementById('fee').innerText = "新台幣 2000 元";
 		}else{document.getElementById('fee').innerText = "新台幣 2500 元"}
 	})
@@ -151,13 +159,33 @@ login_signup_link.addEventListener('click',function(){
 });
 
 
-//Go back to the front page without any popup window
+// Go back to the front page without any popup window
 function goToFront(){
 	popup_window_login.style.display = 'none'
 	popup_window_signup.style.display = 'none' 
 	popup_layout.style.display = 'none'
+	reload();
 }
 
+
+// Pop the login windown
+function signinWindow(){
+	let signup_link = document.getElementById("signup_link")
+	popup_window_login.style.display = 'flex'
+	popup_layout.style.display = 'block'
+	signup_link.addEventListener('click', function(){
+		popup_window_login.style.display = 'none'
+		popup_window_signup.style.display = 'flex'
+	});
+	let login_link = document.getElementById("login_link")
+	login_link.addEventListener('click', function(){
+		popup_window_signup.style.display = 'none'
+		popup_window_login.style.display = 'flex'
+	});
+}
+
+
+// Reload the page
 function reload(){
 	location.reload();
 }
@@ -207,8 +235,8 @@ login_button.addEventListener('click',function(){
 			login_message.innerText = data.message;
 		}else{
 			login_message.innerText = "成功登入"
-			setTimeout(goToFront, 2000);
-			setTimeout(reload, 3000);
+			setTimeout(goToFront, 1000);
+			setTimeout(reload, 1400);
 		}
 	}));
 })
@@ -222,8 +250,8 @@ signup_button.addEventListener('click',function(){
 			signup_message.innerText = data.message;
 		}else{
 			signup_message.innerText = "註冊成功";
-			setTimeout(goToFront, 2000);
-			setTimeout(reload, 3000);
+			setTimeout(goToFront, 1000);
+			setTimeout(reload, 1400);
 		}
 	}));
 })
@@ -281,6 +309,7 @@ async function userLogout(){
 		return getData;
 };
 
+
 const logout_link = document.getElementById('logout_link')
 logout_link.addEventListener('click',function(){
 	userLogout().then((data) => {
@@ -303,4 +332,47 @@ icon_closes.forEach(function(btn){
 const title = document.getElementById('title')
 title.addEventListener('click',function(){
 	window.location.href = '/';
+});
+
+
+// Create the function to post the booking information to the server
+async function postBookingInfo(attraction_id, tour_date, tour_time, price){
+	let obj = {"attractionId": attraction_id,
+						  "date": tour_date,
+						  "time": tour_time,
+						  "price": price
+						};
+	let requestURL = "/api/booking"
+	let json_data = JSON.stringify(obj);
+	const get_response = await fetch(requestURL,{
+		method:'POST',
+		headers:{'Content-type':'application/json'},
+		body:json_data,
+	});
+	return get_response.json();
+};
+
+
+// Click the booking button and then post booking info into db
+const booking_btn = document.getElementById('book_btn')
+booking_btn.addEventListener('click', function(){
+	let tour_date = document.getElementById("tour_date").value
+	let tour_time = document.querySelector("input[type='radio'][name=tour_time]:checked").value
+	// Extract the number from String
+	let numberPattern = /\d+/g;
+	let tour_price = document.getElementById('fee').innerText.match(numberPattern).join('')
+	// Get the attraction_id
+	let attraction_id = getCurrentAttractionId(getCurrentURL)
+	checkUserLogin().then((data) => {
+	if(data.data.id != null){
+			postBookingInfo(attraction_id, tour_date, tour_time, tour_price).then((data) => {
+			console.log(data);
+			if(data['ok'] == true){
+				window.location.href = '/booking'
+			}else{console.log('Failed')}
+	});
+	
+	}else{signinWindow()			
+			} 
+	})				
 });
