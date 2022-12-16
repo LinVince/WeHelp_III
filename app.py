@@ -110,14 +110,21 @@ def getAttractionInfo(attraction_id):
 
 	#Get information from db given attraction_id 
 	attraction_id = attraction_id
-	query = """SELECT id, name , address, picture
+	query = """SELECT id, name , address, images
 					FROM spot
 					WHERE id = %s """
 	cursor.execute(query, (attraction_id,))
 	entry = cursor.fetchone()
-	response = {"attraction_id":entry[0],"name":entry[1],"address":entry[2], "picture":entry[3][0]}
-	return response
+	print (entry)
+	try:
+		response = {"attraction_id":entry[0],
+					"name":entry[1],
+					"address":entry[2],
+					"image":"https://" + entry[3].split('https://')[1]}
+		return response
 
+	except:
+		return "Wrong given attraction_id"
 
 
 """
@@ -566,14 +573,20 @@ def booking_api():
 		# Check login validity
 		if cookie_decoded:
 			email = cookie_decoded['email']
-			response['data']['date'] = getBookingInfo('email')['date']
-			response['data']['time'] = getBookingInfo('email')['time']
-			response['data']['price'] = getBookingInfo('email')['price']
-			response['data']['attraction']['id'] = getBookingInfo(email)['attraction_id']
-			response['data']['attraction']['name'] = getAttractionInfo(response['data']['attraction']['id'])['name']
-			response['data']['attraction']['address'] = getAttractionInfo()['address']
-			response['data']['attraction']['image'] = getAttractionInfo()['image']
-			return jsonify(response)
+			booking_info = getBookingInfo(email)
+			response['data']['date'] = booking_info['date']
+			response['data']['time'] = booking_info['time']
+			response['data']['price'] = booking_info['price']
+			response['data']['attraction']['id'] = booking_info['attraction_id']
+			if booking_info['attraction_id'] != None:
+				attraction_id = booking_info['attraction_id']
+				attraction_info = getAttractionInfo(attraction_id)
+				response['data']['attraction']['name'] = attraction_info['name']
+				response['data']['attraction']['address'] = attraction_info['address']
+				response['data']['attraction']['image'] = attraction_info['image']
+				return jsonify(response)
+			else:
+				return jsonify(response)
 
 		else:
 			error['message'] = '尚未登入'
@@ -640,16 +653,29 @@ def booking_api():
 	elif request.method == "DELETE":
 		response = {"ok": True}
 		error = {"error": True, "message": ""}
-		try:
-			query = """DELETE FROM booking WHERE attraction_id = %s"""
-			cursor.execute(query, (attraction_id,))
-			connection.commit()
-			return jsonify(response)
-
+		try:	
+			cookie = request.cookies.get('access_token')
+			cookie_decoded = jwt.decode(cookie,'secret',algorithms="HS256")
 		except:
-			error['message'] = "刪除失敗"
-			return jsonify(error)
+			error['message'] = '尚未登入'
+			return jsonify (error)
+		# Check login validity
+		if cookie_decoded:
+			email = cookie_decoded['email']
+			try:
+				query = """DELETE FROM booking WHERE email = %s"""
+				cursor.execute(query, (email,))
+				connection.commit()
+				return jsonify(response)
 
+			except:
+				error['message'] = "刪除失敗"
+				return jsonify(error)
+
+		else:
+			error['message'] = "尚未登入"
+			return jsonify(error)
+			
 
 # Pages
 @app.route("/")

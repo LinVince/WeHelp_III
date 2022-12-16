@@ -168,11 +168,11 @@ function goToFront(){
 }
 
 
-// Pop the login windown
+// Pop the login window
 function signinWindow(){
-	let signup_link = document.getElementById("signup_link")
 	popup_window_login.style.display = 'flex'
 	popup_layout.style.display = 'block'
+	let signup_link = document.getElementById("signup_link")
 	signup_link.addEventListener('click', function(){
 		popup_window_login.style.display = 'none'
 		popup_window_signup.style.display = 'flex'
@@ -376,3 +376,15 @@ booking_btn.addEventListener('click', function(){
 			} 
 	})				
 });
+
+// Make the booking link procedure
+const booking_link = document.getElementById("booking_link") 
+
+booking_link.addEventListener('click',function(){
+	checkUserLogin().then((data) => {
+		if(data.data.id != null){
+			window.location.href = '/booking';
+		}else{signinWindow();
+		}
+	})
+})

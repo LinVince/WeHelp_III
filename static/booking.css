@@ -51,7 +51,9 @@ body{
 #login_link,
 #signup_link,
 #login_button,
-#signup_button{
+#signup_button,
+#booking_link,
+#booking_delete_btn{
   cursor: pointer;
 }
 
@@ -211,6 +213,193 @@ text-align: center;
 justify-content:center;
 }
 
+.flex_center{
+  display: flex;
+  justify-content: center;
+}
+
+.flex_column{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 1000px;
+  height: auto;
+}
+
+.flex_end{
+  justify-content: flex-end;
+}
+
+.greeting_heading{
+  width: 1000px;
+  height: 30px;
+  margin-top: 70px;
+  margin-left: 20px;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 19px;
+  text-align: left;
+  line-height: 16px;
+  color: #666666;
+}
+
+#no_booking_info{
+  width: 1000px;
+  margin-top: 70px;
+  margin-left: 20px;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  text-align: left;
+  line-height: 13px;
+  display: none;
+  align-items: center;
+  color: #666666;
+}
+
+.container{
+  display:flex;
+  flex-direction:row;
+  justify-content:center;
+  margin-top: 50px;
+}
+
+.gallery_slideshow{
+  width:266px;
+  height:200px;
+  display:flex;
+  justify-content:center;
+  position:relative;
+}
+
+.info_box{
+  display:block;
+  position: relative;
+  width:700px;
+  margin-left:50px;
+}
+
+#booking_delete_btn{
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.info_heading{
+  width: 400px;
+  height: 14px;
+  margin-bottom: 45px;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 13px;
+  display: flex;
+  align-items: center;
+  color: #448899;
+}
+
+.info_item{
+  margin-top: 20px;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 13px;
+  display: flex;
+  align-items: center;
+  color: #666666;
+}
+
+#attraction_date, #attraction_time, #attraction_price, #attraction_address{
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 13px;
+  display: flex;
+  align-items: center;
+  color: #666666;
+}
+
+.divider{
+  width: 1200px;
+  height: 0px;
+  border:1px solid #E8E8E8;
+  margin-top: 50px;
+}
+
+.input_info{
+  margin-top: 30px;
+  margin-left: 20px;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  text-align: left;
+  line-height: 13px;
+  display: flex;
+  align-items: center;
+  color: #666666;
+}
+
+input{
+  box-sizing: border-box;
+  width: 200px;
+  height: 38px;
+  background: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 5px;
+  margin-left: 20px;
+}
+
+.notice{
+  margin-top: 30px;
+  margin-left: 20px;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 21px;
+  display: flex;
+  align-items: center;
+  color: #666666;
+
+}
+
+
+#confirm_booking_bill_btn{
+cursor: pointer;
+padding: 10px 20px;
+width: 173px;
+height: 36px;
+border: solid 0px;
+display:flex;
+align-items:center;
+justify-content:center;
+padding: 10px 20px;
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 400;
+font-size: 19px;
+color:#FFFFFF;
+line-height: 16px;
+background: #448899;
+border-radius: 5px;
+margin-left:20px;
+}
+
+#confirm_booking_bill_btn:hover{
+  background:#44AAAA;
+}
+
+#confirm_booking_bill_btn:active{
+  background:grey;
+}
 
 .footer{
   width: 100%;
@@ -230,10 +419,6 @@ justify-content:center;
   justify-content: center;
   z-index: 13;
 }
-
-
-
-
 
 
 
@@ -259,6 +444,22 @@ justify-content:center;
   display:none;
 }
 
+.container{
+  flex-wrap: wrap;
+}
+
+.gallery_slideshow{
+  margin-bottom: 70px;
+}
+
+#booking_delete_btn{
+  top:170px;
+}
+
+.notice.flex_end{
+  margin-right: 10px;
+}
+}
 
 @media(min-width:360px) and (max-width:600px){
 
@@ -266,4 +467,30 @@ justify-content:center;
 
 .heading{
   width:70%;
+}
+
+.container{
+  flex-wrap: wrap;
+}
+
+.gallery_slideshow{
+  margin-bottom: 70px;
+}
+
+.info_heading{
+  width: 300px;
+}
+
+#booking_delete_btn{
+  top:170px;
+}
+
+.notice{
+  margin-right: 10px;
+}
+
+.notice.flex_end{
+  margin-right: 10px;
+}
+
 }

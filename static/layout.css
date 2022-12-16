@@ -19,7 +19,6 @@
 }
 
 
-
 .heading{
   background-color:#FFFFFF;
   flex:auto;
@@ -51,7 +50,8 @@
 #login_link,
 #signup_link,
 #login_button,
-#signup_button{
+#signup_button,
+#booking_link{
   cursor: pointer;
 }
 

@@ -338,3 +338,31 @@ title.addEventListener('click',function(){
 	window.location.href = '/';
 });
 
+
+// Pop the login windown
+function signinWindow(){
+	let signup_link = document.getElementById("signup_link")
+	popup_window_login.style.display = 'flex'
+	popup_layout.style.display = 'block'
+	signup_link.addEventListener('click', function(){
+		popup_window_login.style.display = 'none'
+		popup_window_signup.style.display = 'flex'
+	});
+	let login_link = document.getElementById("login_link")
+	login_link.addEventListener('click', function(){
+		popup_window_signup.style.display = 'none'
+		popup_window_login.style.display = 'flex'
+	});
+}
+
+// Make the booking link procedure
+const booking_link = document.getElementById("booking_link") 
+
+booking_link.addEventListener('click',function(){
+	checkUserLogin().then((data) => {
+		if(data.data.id != null){
+			window.location.href = '/booking';
+		}else{signinWindow();
+		}
+	})
+})

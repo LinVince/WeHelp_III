@@ -64,7 +64,17 @@ for i in data['result']['results']:
     Attraction['latitude'] = i['latitude']
     Attraction['description'] = i['description']
     Attraction['memo_time'] = i['MEMO_TIME']
-    Attraction['pictures'] = i['file']
+    
+    # Filter out .mp3
+    extract_img = ''
+    for a in i['file'].split('https://')[1:]:
+        print (a)
+        if a.split('.')[len(a.split('.')) - 1].lower() == 'png':
+            extract_img += "https://" + a
+        elif a.split('.')[len(a.split('.')) - 1].lower() == 'jpg':
+            extract_img += "https://" + a
+
+    Attraction['pictures'] = extract_img
     Attractions.append(Attraction)
 
 
@@ -102,6 +112,13 @@ try:
 
 except:
     print ("Error while connecting to MySQL")
+
+#Drop the table if it exists
+query = """DROP TABLE IF EXISTS spot"""
+cursor.execute(query)
+connection.commit()   
+
+
 
 #Create a Table
 query = """CREATE TABLE spot (
