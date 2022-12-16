@@ -7,15 +7,47 @@
     <link rel="stylesheet" type="text/css" href="/static/attraction.css">    
   </head> 
   <body>  
+  <div id="popup_layout"></div>
+  <div class="flex_center">
+  <div id="popup_window_login">
+    <div class="popup_decorator_bar"></div>
+    <div class="popup_frame">
+      <img id="icon_close" src="/static/images/icon_close.png">
+      <div class="popup_heading">登入會員帳號</div>
+        <div><input type="text" class="login_input" id="login_email" placeholder="輸入電子郵件" name='email'></div>
+        <div><input type="password" class="login_input" id="login_password" placeholder="輸入密碼" name='password'></div>
+        <button id="login_button">登入帳戶</button>
+      <div id="login_message">還沒有帳戶？<a id="signup_link">點此註冊</a></div>
+    </div>
+  </div>
+  </div>
+
+  <div id="popup_layout"></div>
+  <div class="flex_center">
+  <div id="popup_window_signup">
+    <div class="popup_decorator_bar"></div>
+    <div class="popup_frame">
+      <img id="icon_close" src="/static/images/icon_close.png">
+      <div class="popup_heading">註冊會員帳號</div>
+        <div><input type="text" class="signup_input" id="signup_name" placeholder="輸入姓名"></div>
+        <div><input type="text" class="signup_input" id="signup_email" placeholder="輸入電子郵件"></div>
+        <div><input type="password" class="signup_input" id="signup_password" placeholder="輸入密碼"></div>
+        <button id="signup_button">註冊新帳戶</button>
+      <div id="signup_message">已經有帳戶？<a id="login_link">點此登入</a></div>
+    </div>
+  </div>
+  </div>
+
    <div class="top">
     <div class="frame">
-      <div class="heading" style="font-size:26px; font-weight:bolder; color:#2B99BB ;">台北一日遊</div>
+      <div class="heading" id="title">台北一日遊</div>
       <div class="desktop-menu">
-        <div class="item">預定行程</div>
-        <div class="item">登入/註冊</div>
+        <div class="item" id="booking_link">預定行程</div>
+        <div class="item" id="login_signup_link">登入/註冊</div>
+        <div class="item" id="logout_link">登出系統</div>
       </div>
     </div>
-     </div>
+  </div>
   <div class="container">
     <div class="gallery_slideshow">
     <div class="prev"><img src="/static/images/prev_btn.png"></div>
@@ -29,7 +61,7 @@
     <div class="booking_box">
       <div class="booking_text_box">訂購導覽行程</div>   
       <div class="booking_line_box">以此景點為中心的一日行程，帶您探索城市角落故事</div>
-      <div class="text_box">選擇日期：<input type="date" id="tour_date" name="tour_date" checked></div><div class="text_box">選擇時間： <input type="radio" id="day_tour" name="tour_time" value="day" checked><label for="tour_time">上半天</label><input type="radio" id="evening_tour" name="tour_time" value="evening"><label for="tour_time">下半天</label></div>
+      <div class="text_box">選擇日期：<input type="date" id="tour_date" name="tour_date" value="2023-01-01"></div><div class="text_box">選擇時間： <input type="radio" id="morning_tour" name="tour_time" value="morning" checked><label for="tour_time">上半天</label><input type="radio" id="afternoon_tour" name="tour_time" value="afternoon"><label for="tour_time">下半天</label></div>
       <div class="text_box">導覽費用：<span id="fee" style="font-weight:500;">新台幣 2000 元</span></div> 
       <button type="button" id="book_btn">開始預約行程</button>
     </div>
