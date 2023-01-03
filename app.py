@@ -424,6 +424,22 @@ def booking_api():
 			return jsonify(error)
 			
 
+
+@app.route("/api/orders", methods = ["GET", "POST"])
+def order_api():
+
+	#Send the purchase information to tappay server
+	if request.method == "POST":
+
+		
+
+
+
+
+		
+		return jsonify({'ok':True})
+
+
 # Pages
 @app.route("/")
 def index():

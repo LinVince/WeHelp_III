@@ -92,10 +92,24 @@ async function renderGreeting(){
 		return getData;
 };
 
+// Get the information from api/booking if logged in
+async function getBookingInfo(){
+	let requestURL = "/api/booking";
+	let getData = await fetch(requestURL,
+	{	method:'GET',
+		headers:{'Content-type':'application/json'}
+	}).then(function(response){
+		return response.json();
+	}).then(function(data){
+		return data	
+	})	
+		return getData;
+};
+
 // Render the information retrieved from api/booking if logged in
 async function renderBookingInfo(){
 	let requestURL = "/api/booking";
-	const getData = await fetch(requestURL,
+	let getData = await fetch(requestURL,
 	{	method:'GET',
 		headers:{'Content-type':'application/json'}
 	}).then(function(response){
@@ -211,4 +225,66 @@ booking_link.addEventListener('click',function(){
 booking_del_btn.addEventListener('click', function(){
 	booking_del_request();
 	location.reload();
+});
+
+
+
+
+//Tappay Transaction 
+// call TPDirect.card.getPrime when user submit form to get tappay prime
+
+const pay_btn = document.getElementById('confirm_booking_bill_btn')
+
+//Tappay SDK - get prime and post order to the server
+
+pay_btn.addEventListener('click', function(){
+	getBookingInfo().then((data) => {
+		// Get the booking info
+		let price = data.data.price;
+		let date = data.data.date;
+		let time = data.data.time;
+		let attraction = data.data.attraction;
+
+		// Get the contact info
+		let contact_name = document.getElementById('contact_name').value
+		let contact_email = document.getElementById('contact_email').value
+		let contact_mobile = document.getElementById('contact_mobile').value
+
+		// Get the prime and send POST inside 
+		TPDirect.card.getPrime((result) => {
+			let prime = result.card.prime
+
+			// Send information (POST) to the server
+			let requestURL = "/api/orders";
+			let obj = {"prime": prime,
+					   "order": {
+						    "price": price,
+						    "trip": {
+						      "attraction": attraction,
+						      "date": date,
+						      "time": time
+						    },
+						    "contact": {
+						      "name": contact_name,
+						      "email": contact_email,
+						      "phone": contact_mobile
+						    }
+						  }
+						};
+			
+			json_data = JSON.stringify(obj);
+			console.log(json_data)
+			const get_response = fetch(requestURL,{
+			method:'POST',
+			headers:{'Content-type':'application/json'},
+			body:json_data,
+			}).then(function(response){
+					return response.json();
+			}).then(function(data){
+				console.log(data);
+				return data;
+			});	
+				return get_response;
+		});
+	});
 });
