@@ -161,7 +161,6 @@ function noBookingInfoNotice(){
 	no_booking_info.style.display = "flex";
 	footer.style.position = 'fixed';
 	footer.style.bottom = '0px';
-
 };
 
 // Top-right corner: display login/signup
@@ -281,8 +280,10 @@ pay_btn.addEventListener('click', function(){
 			}).then(function(response){
 					return response.json();
 			}).then(function(data){
-				console.log(data);
-				return data;
+				if(data.data.payment.status === 0){
+					window.location.href = '/thankyou?number=' + data.data.number;
+				};
+				
 			});	
 				return get_response;
 		});

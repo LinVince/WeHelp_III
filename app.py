@@ -4,6 +4,8 @@ import bcrypt
 import jwt
 import datetime
 import model
+import requests
+import json
 
 app=Flask(__name__)
 app.config["JSON_AS_ASCII"]=False
@@ -430,14 +432,126 @@ def order_api():
 
 	#Send the purchase information to tappay server
 	if request.method == "POST":
-
+		error = {"error": True, "message": ""}
+		request_body = request.get_json()
 		
+		# Check the login status
+		try:	
+			cookie = request.cookies.get('access_token')
+			cookie_decoded = jwt.decode(cookie,'secret',algorithms="HS256")
+		except:
+			error['message'] = '尚未登入'
+			return jsonify (error)
+
+		# Check login validity
+		if cookie_decoded:
+			# Track the user by email
+			user_email = cookie_decoded['email']
+			print ("Authenticated successfully")
+
+			# Define order number
+			user_id = mydb.getUserdbInfo(user_email)['id']
+			dt_string = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+			order_number = dt_string + str(user_id)
+
+			# Get prime
+			prime = request_body['prime']
+
+			# Define order info
+			attraction_id = request_body['order']['trip']['attraction']['id']
+			attraction_name = request_body['order']['trip']['attraction']['name']
+			attraction_address = request_body['order']['trip']['attraction']['address']
+			attraction_image = request_body['order']['trip']['attraction']['image']
+			price = int(request_body['order']['price'])		
+			date = request_body['order']['trip']['date']
+			time = request_body['order']['trip']['time']
+			contact_name = request_body['order']['contact']['name']
+			contact_email = request_body['order']['contact']['email']
+			contact_mobile = request_body['order']['contact']['phone']
+
+			# Set payment status as Not paid
+			status = "未付款"
+
+			# Feed the information into the db
+			try:
+				mydb.commit_query("""INSERT INTO ordering (order_number, 
+															user_email,
+															attraction_id,
+															attraction_name,
+															attraction_address,
+															attraction_image,
+															date_,
+															time_,
+															price,
+															contact_name,
+															contact_email,
+															contact_mobile,
+															status)
+									 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+					   				""", order_number, user_email,attraction_id, attraction_name,
+					   				attraction_address, attraction_image, date, time, price, contact_name,
+					   				contact_email, contact_mobile, status)
+
+			except:
+				error['message'] = "訂單建立失敗"
+				return jsonify(error)
+
+
+			# Talk to TapPay Server
+			tpurl = 'https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime'
+			p_key = 'partner_u0naLA9KEkXKFSQ2ITGbLmALbZ7lox2m3bMrSyXo72YCsbpuYndbgOOL'
+			merchant_id = 'vincejim91126_CTBC'
+			tpheaders = {'Content-type':'application/json', 'x-api-key' : p_key}
+
+			tpbody = {"prime": prime,
+			        "partner_key": p_key,
+			        "merchant_id": merchant_id,
+			        "amount": price,
+			        "details":"Tourist Attraction Guidance Fee",
+			        "cardholder": {
+			            "phone_number": contact_mobile,
+			            "name": contact_name,
+			            "email": contact_email,
+			             },
+			        "remember": False
+			        } 
+			        
+			tpresponse = requests.post(tpurl, headers=tpheaders, json = tpbody)
+
+			# If payment succeeds, send the message to the frontend
+			if json.loads(tpresponse.text)['status'] == 0:
+				response = {"data":{"number":order_number,
+									"payment":{"status":0,
+												"message":"付款成功"
+												}
+									}
+							}
+
+
+				# Update datebase status
+				mydb.commit_query("""UPDATE ordering 
+									 SET status = '已付款' 
+									 WHERE order_number = %s""", order_number)
+
+				return jsonify(response)
+
+
+			else:
+				response = {"data":{"number":order_number,
+									"payment":{"status":1,
+												"message":"付款失敗"
+												}
+									}
+							}
+				
+				return jsonify(response)
 
 
 
+		else:
+			error['message'] = '登入狀態錯誤'
+			return jsonify (error)
 
-		
-		return jsonify({'ok':True})
 
 
 # Pages

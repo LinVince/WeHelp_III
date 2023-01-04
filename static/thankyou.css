@@ -1,0 +1,300 @@
+body{
+  margin: 0px;
+}
+
+.top{
+  display:flex;
+  justify-content:center;
+  position: sticky;
+  top: 0;
+  z-index:10;
+  background-color:#FFF;
+}
+
+.frame{
+  display:flex;
+  font-size:16px;
+  width:1200px; 
+}
+
+.heading{
+  background-color:#FFFFFF;
+  flex:auto;
+  width:400px;
+  margin:8px;
+  font-size:26px; 
+  font-weight:bolder; 
+  color:#2B99BB ;
+}
+
+#title{
+  cursor: pointer;
+}
+
+.desktop-menu{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  background-color:#FFFFFF;
+  flex:none;
+  width:40%;
+  margin:8px;
+}
+
+.flex_center{
+  display: flex;
+  justify-content: center;
+}
+
+#login_signup_link,
+#logout_link,
+#login_link,
+#signup_link,
+#login_button,
+#signup_button,
+#booking_link,
+#booking_delete_btn{
+  cursor: pointer;
+}
+
+#logout_link{
+  display: none;
+}
+
+.mobile-menu{
+  margin:8px;
+
+}
+.item{
+  background-color:#FFFFFF;
+  flex:none;
+  margin-right:10px;
+  text-align:center;
+  font-weight:500;
+  font-size: 16px;
+  color: #666666;
+}
+
+#login_signup_link,
+#logout_link,
+#login_link,
+#signup_link,
+#login_button,
+#signup_button{
+  cursor: pointer;
+}
+
+#logout_link{
+  display: none;
+}
+
+#popup_layout{
+  width: 1920px;
+  height: 1374px;
+  background-color:#000000;
+  opacity:0.25;
+  display:none;
+  position:fixed;
+  z-index:20;
+}
+
+.flex_center{
+  display: flex;
+  justify-content: center;
+}
+
+#popup_window_login,
+#popup_window_signup{
+  width:340px;
+  height:275px;
+  position: fixed;
+  border-radius:6px;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 60px #AAAAAA;
+  top:80px;
+  display:none;
+  justify-content:center;
+  align-items:flex-start;
+  z-index:21; 
+}
+
+#popup_window_signup{
+  height: 332px;
+}
+
+.popup_decorator_bar{
+  position: absolute;
+  width: 340px;
+  height: 10px;
+  border-top-left-radius:6px;
+  border-top-right-radius:6px;
+  top:-5px;
+  background: linear-gradient(270deg, #337788 0%, #66AABB 100%);
+  z-index:22;
+}
+
+.popup_frame{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+#icon_close{
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  right: 7px;
+  top: 10px;
+  cursor: pointer;
+
+}
+
+
+.popup_heading{
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 700;
+font-size: 24px;
+line-height: 24px;
+margin-top:20px;
+text-align: center;
+color: #666666;
+}
+
+.login_input, 
+.signup_input{
+margin-top:15px;
+box-sizing: border-box;
+width: 310px;
+height: 47px;
+background: #FFFFFF;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+padding-left:15px;
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 13px;
+display: flex;
+align-items: center;
+color: #757575;
+}
+
+#login_button,
+#signup_button{
+width: 310px;
+height: 47px;
+background: #448899;
+border-radius: 5px;
+margin-top:15px;
+border:none;
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 400;
+font-size: 19px;
+line-height: 16px;
+color: #FFFFFF;
+}
+
+#login_message,
+#signup_message{
+width: 310px;
+height: 22px;
+margin-top:12px;
+font-family: 'Noto Sans TC';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 13px;
+color: #666666;
+display: flex;
+text-align: center;
+justify-content:center;
+}
+
+.flex_center{
+  display: flex;
+  justify-content: center;
+}
+
+.flex_column{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 1000px;
+  height: auto;
+}
+
+.flex_end{
+  justify-content: flex-end;
+}
+
+#thankyou_info{
+  width: 1000px;
+  height: 30px;
+  margin: 100px;
+  margin-top: 300px;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 19px;
+  text-align: center;
+  line-height: 30px;
+  color: #666666;
+}
+
+
+
+.footer{
+  width: 100%;
+  height: 104px;
+  background-color: #757575;
+  color: white;
+  margin-top: 100px;
+  text-align: center;
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 13px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 13;
+}
+
+
+
+@media(min-width:600px) and (max-width:1199px){
+
+
+.frame{
+  width: 70%;
+}
+
+.heading{
+  width: 70%;
+}
+
+.desktop-menu{
+  display:flex;
+  width:50%
+  align-items;center;
+  margin-top:15px;
+}
+
+.mobile-menu{
+  display:none;
+}
+}
+
+@media(min-width:360px) and (max-width:600px){
+
+
+
+.heading{
+  width:70%;
+}
+}
