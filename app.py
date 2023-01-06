@@ -3,129 +3,16 @@ import mysql.connector
 import bcrypt
 import jwt
 import datetime
+import model
+import requests
+import json
 
 app=Flask(__name__)
 app.config["JSON_AS_ASCII"]=False
 app.config["TEMPLATES_AUTO_RELOAD"]=True
 app.secret_key = "Thisismysecretkey000000111111"
 
-# Create the database object
-class Database:
-
-    def __init__(self,user,password,database):
-        self.user = user        
-        self.password = password
-        self.database = database
-
-    def __repr__(self):
-        return f'<Database: {self.database}>'
-
-mydb = Database('root','811223','taipei_tour')
-
-def getUserdbInfo(email):
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫連接錯誤'
-		return (error)
-
-	#Get information from db given email
-	email = email
-	query = """SELECT id, name, email
-					FROM member
-					WHERE email = %s """
-	cursor.execute(query, (email,))
-	entry = cursor.fetchone()
-	response = {"id":entry[0],"name":entry[1],"email":entry[2]}
-	return response
-
-
-def getBookingInfo(email):
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫連接錯誤'
-		return (error)
-
-	#Get information from db given email
-	email = email
-	response = {"attraction_id":None,"date":None,"time":None, "price":None}
-	try:
-		query = """SELECT attraction_id, date_ , time_, price
-						FROM booking
-						WHERE email = %s """
-		cursor.execute(query, (email,))
-		entry = cursor.fetchall()[0]
-		response = {"attraction_id":entry[0],"date":entry[1],"time":entry[2], "price":entry[3]}
-		return response
-
-	except:
-		return response
-
-def getAttractionInfo(attraction_id):
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫連接錯誤'
-		return (error)
-
-	#Get information from db given attraction_id 
-	attraction_id = attraction_id
-	query = """SELECT id, name , address, images
-					FROM spot
-					WHERE id = %s """
-	cursor.execute(query, (attraction_id,))
-	entry = cursor.fetchone()
-	print (entry)
-	try:
-		response = {"attraction_id":entry[0],
-					"name":entry[1],
-					"address":entry[2],
-					"image":"https://" + entry[3].split('https://')[1]}
-		return response
-
-	except:
-		return "Wrong given attraction_id"
-
+mydb = model.Database('root','811223','taipei_tour')
 
 """
 Database member data structure (id, name, email, hased_password, salt)
@@ -150,37 +37,16 @@ def attractions():
 				'images':[]
 				}
 
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫連接錯誤'
-		return (error)
-	
 
 	# Get information from the database (with or without keyword)
     # Data structure => tuple list [(id, name.....), (id, name.....), ...]
     # See the number of pages and if there is a next page
 	keyword = request.args.get('keyword')
-	page = request.args.get('page')
-	page = int(page)
+	page = int(request.args.get('page'))
 	row_num = int()
 	if  keyword != None:
 		keyword_name = '%' + request.args.get('keyword') + '%'
 		keyword_cat = request.args.get('keyword')
-		print (keyword)
 		query = """SELECT id, name, category, description, address,
 						direction, mrt, longitude, latitude, images
 					FROM spot
@@ -188,8 +54,7 @@ def attractions():
 						OR category = %s
 					LIMIT %s, %s
 						"""
-		cursor.execute(query, (keyword_name, keyword_cat, page * 12, 12))
-		entry = cursor.fetchall()
+		entry = mydb.commit_query(query, keyword_name, keyword_cat, page * 12, 12)
 		
 		# Get the value (row_num)
 		query = """SELECT COUNT(*)
@@ -198,9 +63,9 @@ def attractions():
 						OR category = %s
 					
 						"""
-		cursor.execute(query, (keyword_name, keyword_cat))
-		row_num = cursor.fetchone()[0]
-		
+		# first [0] => first item in fetchall(list)
+		# second [0] => first item in the tuple(COUNT(*),....)
+		row_num = mydb.commit_query(query, keyword_name, keyword_cat)[0][0]
 		
 	
 	else:
@@ -208,18 +73,16 @@ def attractions():
 						  direction, mrt, longitude, latitude, images
 				   FROM spot
 				   LIMIT %s, %s"""
-		cursor.execute(query, (page *12, 12))
-		entry = cursor.fetchall()
+		entry = mydb.commit_query(query, page * 12, 12)
 
 		# Get the value (row_num)
 		query = """SELECT COUNT(*)
 					FROM spot					
 						"""
-		cursor.execute(query)
-		row_num = cursor.fetchone()[0]
+		row_num = mydb.commit_query(query)[0][0]
 
 
-	# Check if there is any information
+	# Check if there is any informatsion
 	if len(entry) == 0:
 		error['message'] = '無法取得任何資料'
 		return (error)
@@ -282,26 +145,6 @@ def attraction_api(attraction_id):
 				'images':[]
 				}
 
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫無法連線'
-		return (error)
-
-
 	# Get the information from the database
 	attraction_id = int(attraction_id)
 
@@ -311,8 +154,8 @@ def attraction_api(attraction_id):
 				   WHERE id = %s"""
 
 	try:
-		cursor.execute(query, (attraction_id,))
-		entry = cursor.fetchone()
+		entry = mydb.commit_query(query, attraction_id)[0]
+		
 
 	except:
 		error['message'] = '景點編號不正確'
@@ -342,30 +185,9 @@ def categories():
 	response = {"data": []}
 	error = {"error":True, "message":""}
 
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫無法連線'
-		return (error)
-
-
 	# Get all the attractions from the database
 	query = """SELECT category FROM spot"""
-	cursor.execute(query)
-	entry = cursor.fetchall()	
+	entry = mydb.commit_query("""SELECT category FROM spot""")	
 
 	# Append the category into the list
 	cat_list = []
@@ -387,26 +209,6 @@ def registration():
 	response = {"ok": True}
 	error = {"error":True, "message":""}
 
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫無法連線'
-		return error
-
-
 	#Define and get the form request (nm/ac/pw)
 	name = request.get_json()['name']
 	email = request.get_json()['email']
@@ -424,10 +226,7 @@ def registration():
 	password = password.decode('utf-8')
 
     #Check if the email has been registered
-	mycursor = connection.cursor(buffered=True)
-	query = """Select email FROM member WHERE email = %s"""
-	mycursor.execute(query, (email,))
-	result = mycursor.fetchall()
+	result = mydb.commit_query("""Select email FROM member WHERE email = %s""", email)
 
 	if len(result) != 0:
 		error['message'] = "帳號已經存在"
@@ -435,8 +234,7 @@ def registration():
 
 	else:
 		query = """INSERT INTO member (name, email, password, salt) VALUES (%s, %s, %s, %s)"""
-		mycursor.execute(query, (name, email, password, salt))
-		connection.commit()
+		mydb.commit_query(query, name, email, password, salt)
 		return response
 
 
@@ -444,25 +242,6 @@ def registration():
 
 @app.route("/api/user/auth", methods = ["GET", "PUT", "DELETE"])
 def user_info():
-	# Connect to the database 
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫連接錯誤'
-		return (error)
-
 	#Get the information of the user who has been logged into
 	if request.method == "GET":
 		response = {"data":{"id":None, "name":None, "email":None}}
@@ -476,10 +255,11 @@ def user_info():
 
 		if cookie_decoded:
 			email = jwt.decode(cookie,'secret',algorithms="HS256")['email']
-			print ("this is the decoded", email)
-			response['data']['id'] = getUserdbInfo(email)['id']
-			response['data']['name'] = getUserdbInfo(email)['name']
-			response['data']['email'] = getUserdbInfo(email)['email']
+			result = mydb.getUserdbInfo(email)
+			response['data'].update([('id',result['id']),
+									('name',result['name']),
+									('email',result['email'])])
+
 			return jsonify (response)
 		else:
 			return jsonify (response)
@@ -495,14 +275,8 @@ def user_info():
 		
 		password = password.encode('utf-8')
 
-		query = "SELECT * FROM member WHERE email =  %s"
-		#Avoid "unread result error"
-		mycursor = connection.cursor(buffered=True)
+		myresult = mydb.commit_query("SELECT * FROM member WHERE email =  %s", email)
 
-		#Process the password and the salt
-		mycursor.execute(query, (email,))
-		connection.commit()
-		myresult = mycursor.fetchall()
 
 		if len(myresult) == 1:
 			salt = myresult[0][4]
@@ -517,7 +291,6 @@ def user_info():
 				response.headers['Access-Control-Allow-Credentials'] = True
 				expire = datetime.datetime.now() + datetime.timedelta(days=7)
 				response.set_cookie('access_token', value=access_token, expires = expire)
-				print ('Great')
 				return response
                
 			else:
@@ -538,24 +311,6 @@ def user_info():
 
 @app.route("/api/booking", methods = ["GET", "POST", "DELETE"])
 def booking_api():
-	# Connect to the database  
-	connection = mysql.connector.connect(user=mydb.user, 
-                                        password=mydb.password,
-                                        host='127.0.0.1',
-                                        database=mydb.database
-                                        )
-	try:    
-	    print (connection.is_connected())
-	    db_Info = connection.get_server_info()
-	    print("Connected to MySQL Server version ", db_Info)
-	    cursor = connection.cursor(buffered=True)
-	    cursor.execute("select database();")
-	    record = cursor.fetchone()
-	    print("You're connected to database: ", record)
-
-	except:
-		error['message'] = '資料庫連接錯誤'
-		return (error)
 
 	#Get the information of booking not yet billed
 	if request.method == "GET":
@@ -570,20 +325,21 @@ def booking_api():
 		except:
 			error['message'] = '尚未登入'
 			return jsonify (error)
+
 		# Check login validity
 		if cookie_decoded:
 			email = cookie_decoded['email']
-			booking_info = getBookingInfo(email)
-			response['data']['date'] = booking_info['date']
-			response['data']['time'] = booking_info['time']
-			response['data']['price'] = booking_info['price']
+			booking_info = mydb.getBookingInfo(email)
+			response['data'].update([('date',booking_info['date']), 
+									('time', booking_info['time']), 
+									('price',booking_info['price'])])
 			response['data']['attraction']['id'] = booking_info['attraction_id']
 			if booking_info['attraction_id'] != None:
 				attraction_id = booking_info['attraction_id']
-				attraction_info = getAttractionInfo(attraction_id)
-				response['data']['attraction']['name'] = attraction_info['name']
-				response['data']['attraction']['address'] = attraction_info['address']
-				response['data']['attraction']['image'] = attraction_info['image']
+				attraction_info = mydb.getAttractionInfo(attraction_id)
+				response['data']['attraction'].update([('name', attraction_info['name']),
+														('address',attraction_info['address']),
+														('image', attraction_info['image'])])
 				return jsonify(response)
 			else:
 				return jsonify(response)
@@ -596,7 +352,7 @@ def booking_api():
 	elif request.method == "POST":
 		response = {"ok": True}
 		error = {"error": True, "message": ""}
-		print ("Get the post message", request)
+
 		# Check the login status
 		try:	
 			cookie = request.cookies.get('access_token')
@@ -615,29 +371,23 @@ def booking_api():
 			price = request.get_json()['price']
 			# Check if the email(user) has already booked
 			try:
-				if getBookingInfo(email)['attraction_id'] != None:
-					print ("Ready to post information")
-					query = """SET SQL_SAFE_UPDATES = 0"""
-					cursor.execute(query)
-					print ("Step one done")
+				if mydb.getBookingInfo(email)['attraction_id'] != None:
+					mydb.commit_query("SET SQL_SAFE_UPDATES = 0")
 					query = """UPDATE booking  
-								SET attraction_id = %s, date_ = %s, time_ = %s, price = %s
+								SET attraction_id = %s, 
+								date_ = %s, 
+								time_ = %s, 
+								price = %s
 							    WHERE email = %s;"""
-					cursor.execute(query, (attraction_id, date, time, price, email))
-					print ("Step two done")
-					query = """SET SQL_SAFE_UPDATES = 1"""
-					cursor.execute(query)
-					connection.commit()
-					print ("successfully posted")
+					mydb.commit_query(query, attraction_id, date, time, price, email)
+					mydb.commit_query("SET SQL_SAFE_UPDATES = 1")
 					return jsonify(response)
 
 				else:
 					query = """INSERT INTO booking (attraction_id, date_, time_, price, email)
 								VALUES (%s, %s, %s, %s, %s)
 								"""
-					cursor.execute(query, (attraction_id, date, time, price, email))
-					connection.commit()
-					print ("successfully posted")
+					mydb.commit_query(query, attraction_id, date, time, price, email)
 					return jsonify(response)
 		
 
@@ -659,13 +409,12 @@ def booking_api():
 		except:
 			error['message'] = '尚未登入'
 			return jsonify (error)
+
 		# Check login validity
 		if cookie_decoded:
 			email = cookie_decoded['email']
 			try:
-				query = """DELETE FROM booking WHERE email = %s"""
-				cursor.execute(query, (email,))
-				connection.commit()
+				mydb.commit_query("""DELETE FROM booking WHERE email = %s""", email)
 				return jsonify(response)
 
 			except:
@@ -676,6 +425,138 @@ def booking_api():
 			error['message'] = "尚未登入"
 			return jsonify(error)
 			
+
+
+@app.route("/api/orders", methods = ["GET", "POST"])
+def order_api():
+
+	#Send the purchase information to tappay server
+	if request.method == "POST":
+		error = {"error": True, "message": ""}
+		request_body = request.get_json()
+		
+		# Check the login status
+		try:	
+			cookie = request.cookies.get('access_token')
+			cookie_decoded = jwt.decode(cookie,'secret',algorithms="HS256")
+		except:
+			error['message'] = '尚未登入'
+			return jsonify (error)
+
+		# Check login validity
+		if cookie_decoded:
+			# Track the user by email
+			user_email = cookie_decoded['email']
+			print ("Authenticated successfully")
+
+			# Define order number
+			user_id = mydb.getUserdbInfo(user_email)['id']
+			dt_string = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+			order_number = dt_string + str(user_id)
+
+			# Get prime
+			prime = request_body['prime']
+
+			# Define order info
+			attraction_id = request_body['order']['trip']['attraction']['id']
+			attraction_name = request_body['order']['trip']['attraction']['name']
+			attraction_address = request_body['order']['trip']['attraction']['address']
+			attraction_image = request_body['order']['trip']['attraction']['image']
+			price = int(request_body['order']['price'])		
+			date = request_body['order']['trip']['date']
+			time = request_body['order']['trip']['time']
+			contact_name = request_body['order']['contact']['name']
+			contact_email = request_body['order']['contact']['email']
+			contact_mobile = request_body['order']['contact']['phone']
+
+			# Set payment status as Not paid
+			status = "未付款"
+
+			# Feed the information into the db
+			try:
+				mydb.commit_query("""INSERT INTO ordering (order_number, 
+															user_email,
+															attraction_id,
+															attraction_name,
+															attraction_address,
+															attraction_image,
+															date_,
+															time_,
+															price,
+															contact_name,
+															contact_email,
+															contact_mobile,
+															status)
+									 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+					   				""", order_number, user_email,attraction_id, attraction_name,
+					   				attraction_address, attraction_image, date, time, price, contact_name,
+					   				contact_email, contact_mobile, status)
+
+			except:
+				error['message'] = "訂單建立失敗"
+				return jsonify(error)
+
+
+			# Talk to TapPay Server
+			tpurl = 'https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime'
+			p_key = 'partner_u0naLA9KEkXKFSQ2ITGbLmALbZ7lox2m3bMrSyXo72YCsbpuYndbgOOL'
+			merchant_id = 'vincejim91126_CTBC'
+			tpheaders = {'Content-type':'application/json', 'x-api-key' : p_key}
+
+			tpbody = {"prime": prime,
+			        "partner_key": p_key,
+			        "merchant_id": merchant_id,
+			        "amount": price,
+			        "details":"Tourist Attraction Guidance Fee",
+			        "cardholder": {
+			            "phone_number": contact_mobile,
+			            "name": contact_name,
+			            "email": contact_email,
+			             },
+			        "remember": False
+			        } 
+			        
+			tpresponse = requests.post(tpurl, headers=tpheaders, json = tpbody)
+
+			# If payment succeeds, send the message to the frontend
+			if json.loads(tpresponse.text)['status'] == 0:
+				response = {"data":{"number":order_number,
+									"payment":{"status":0,
+												"message":"付款成功"
+												}
+									}
+							}
+
+
+				# Update datebase status
+				mydb.commit_query("""UPDATE ordering 
+									 SET status = '已付款' 
+									 WHERE order_number = %s""", order_number)
+
+				# Delete booking info
+				mydb.commit_query("""DELETE FROM booking WHERE email = %s""", user_email)
+
+
+				return jsonify(response)
+
+
+			else:
+				response = {"data":{"number":order_number,
+									"payment":{"status":1,
+												"message":"付款失敗"
+												}
+									}
+							}
+				
+				return jsonify(response)
+
+
+
+		else:
+			error['message'] = '登入狀態錯誤'
+			return jsonify (error)
+
+
 
 # Pages
 @app.route("/")
