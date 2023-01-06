@@ -533,6 +533,10 @@ def order_api():
 									 SET status = '已付款' 
 									 WHERE order_number = %s""", order_number)
 
+				# Delete booking info
+				mydb.commit_query("""DELETE FROM booking WHERE email = %s""", user_email)
+
+
 				return jsonify(response)
 
 
